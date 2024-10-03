@@ -8,12 +8,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import ru.flynt3650.project.first_rest_app.dto.PersonDto;
 import ru.flynt3650.project.first_rest_app.models.Person;
 import ru.flynt3650.project.first_rest_app.services.PeopleService;
 import ru.flynt3650.project.first_rest_app.util.PersonErrorResponse;
 import ru.flynt3650.project.first_rest_app.util.PersonNotCreatedException;
 import ru.flynt3650.project.first_rest_app.util.PersonNotFoundException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -38,7 +40,9 @@ public class PeopleController {
     }
 
     @PostMapping
-    public ResponseEntity<HttpStatus> create(@RequestBody @Valid Person person, @NotNull BindingResult bindingResult) {
+    public ResponseEntity<HttpStatus> create(@RequestBody @Valid PersonDto personDto,
+                                             @NotNull BindingResult bindingResult) {
+
         if (bindingResult.hasErrors()) {
             StringBuilder errorMessage = new StringBuilder();
 
@@ -53,7 +57,7 @@ public class PeopleController {
             throw new PersonNotCreatedException(errorMessage.toString());
         }
 
-        peopleService.save(person);
+        peopleService.save(convertToPerson(personDto));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -73,5 +77,15 @@ public class PeopleController {
         );
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    private @NotNull Person convertToPerson(@NotNull PersonDto personDto) {
+        Person person = new Person();
+
+        person.setName(personDto.getName());
+        person.setAge(personDto.getAge());
+        person.setEmail(personDto.getEmail());
+
+        return person;
     }
 }
