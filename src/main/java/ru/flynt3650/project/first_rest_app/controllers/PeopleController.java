@@ -2,6 +2,7 @@ package ru.flynt3650.project.first_rest_app.controllers;
 
 import jakarta.validation.Valid;
 import org.jetbrains.annotations.NotNull;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,28 +16,34 @@ import ru.flynt3650.project.first_rest_app.util.PersonErrorResponse;
 import ru.flynt3650.project.first_rest_app.util.PersonNotCreatedException;
 import ru.flynt3650.project.first_rest_app.util.PersonNotFoundException;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/people")
 public class PeopleController {
 
     private final PeopleService peopleService;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public PeopleController(PeopleService peopleService) {
+    public PeopleController(PeopleService peopleService, ModelMapper modelMapper) {
         this.peopleService = peopleService;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping()
-    public List<Person> getPeople() {
-        return peopleService.findAll();
+    public List<PersonDto> getPeople() {
+        return peopleService
+                .findAll()
+                .stream()
+                .map(this::convertToPersonDto)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public Person getPerson(@PathVariable("id") int id) {
-        return peopleService.findOne(id);
+    public PersonDto getPerson(@PathVariable("id") int id) {
+        return convertToPersonDto(peopleService.findOne(id));
     }
 
     @PostMapping
@@ -80,12 +87,10 @@ public class PeopleController {
     }
 
     private @NotNull Person convertToPerson(@NotNull PersonDto personDto) {
-        Person person = new Person();
+        return modelMapper.map(personDto, Person.class);
+    }
 
-        person.setName(personDto.getName());
-        person.setAge(personDto.getAge());
-        person.setEmail(personDto.getEmail());
-
-        return person;
+    private PersonDto convertToPersonDto(Person person) {
+        return modelMapper.map(person, PersonDto.class);
     }
 }

@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 public class PersonDto {
 
     @NotEmpty(message = "Name should not be empty")
-    @Size(min= 2, max = 30, message = "Name should be between 2 and 30 characters long")
+    @Size(min = 2, max = 30, message = "Name should be between 2 and 30 characters long")
     private String name;
 
     @Min(value = 0, message = "Age should be greater than 0")
